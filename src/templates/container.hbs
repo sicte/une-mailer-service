@@ -1,0 +1,22 @@
+<body>
+  <div
+    style="background-color: #f5f5f4; font-family: sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
+
+    <div style="max-width: 1200px; padding: 10px; width: 100%; margin: 0 auto; text-align: center;">
+      {{> (get_component 'header')}}
+      <div
+        style="border: solid 3px #eeeeee; box-sizing: border-box; display: inline-block; margin: 0 auto; max-width: 1000px; padding: 10px; background: #ffffff; border-radius: 3px; text-align: left;">
+        <div style="overflow: auto;">
+          <div
+            style="font-family: sans-serif; font-size: 14px; padding: 20px; box-sizing: border-box; width: 100%; text-align: center;">
+            {{> (lookup . 'view')}}
+          </div>
+        </div>
+        {{> (get_component 'footer')}}
+        <p style="text-align: center; font-style: italic; font-size: 10px; color: #b1b1b1; font-weight: 600;">
+          Este correo ha sido enviado de forma automática, por favor, no responder.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
