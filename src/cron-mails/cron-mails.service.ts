@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { EmailType, MailHandler } from 'src/common/mail-handler';
 import { LogItems, EncaActasEntrega } from 'src/entities';
 import { Repository, Between, In } from 'typeorm';
@@ -8,6 +8,8 @@ import { Usuarios } from 'src/entities/usuarios.entity';
 
 @Injectable()
 export class CronMailsService {
+  private readonly logger = new Logger(CronMailsService.name);
+
   constructor(
     private readonly mailHandler: MailHandler,
     @InjectRepository(LogItems)
@@ -19,16 +21,15 @@ export class CronMailsService {
   ) {}
 
   async emailModificacionesReserva() {
+    // Get yesterday day with YYYY-MM-DD format
     const yesterday = moment().subtract(1, 'day').format('YYYY-MM-DD');
 
-    //encaActasEntrega con indicativoReserva = 1
     const encaActasEntrega = await this.encaActasEntregaRepository.find({
       where: {
         indicativoReserva: 1,
       },
     });
 
-    //TODO: Formato de fecha a AAAA/MM/DD , HR:MM
     const logItems = await this.logItemsRepository.find({
       where: {
         fecha: Between<Date>(new Date(`${yesterday} 0:00:00`), new Date(`${yesterday} 23:59:59`)),
@@ -52,25 +53,40 @@ export class CronMailsService {
       },
     });
 
+    // Get all the correoElectronico_1 property from all the users fetched before
+    const mailsUsuarios = usuarios.map((usuario) => usuario.correoElectronico_1);
+
+    // Headers to render in the table component
+    const mailHeaders = ['TIPO', 'SPR', 'PLANILLA', 'CÓDIGO', 'DESCRIPCIÓN', 'CANTIDAD', 'FECHA'];
+
+    // Rows to render in table component, with the Key being the same that the headers
+    const mailRows = logItems.map((logItem) => ({
+      TIPO: logItem.tipo,
+      SPR: logItem.idSpr_20,
+      PLANILLA: logItem.idEncaActaEntrega_6,
+      CÓDIGO: logItem.idItem_9,
+      DESCRIPCIÓN: logItem.maestraItems.item,
+      CANTIDAD: logItem.cantidad,
+      FECHA: moment(new Date(logItem.fecha)).format('YYYY-MM-DD HH:mm'),
+    }));
+
+    if (mailRows.length <= 0) {
+      this.logger.warn(
+        'Modificaciones Reserva email was not sent because there was no data to display in the template',
+      );
+    }
+
     this.mailHandler
       .sendMail({
         type: EmailType.CRON,
-        to: ['nicolas.florez@sicte.com'],
+        to: mailsUsuarios,
         from: 'Sicte <departamento.tecnologia@sicte.com>',
         subject: 'Modificaciones Reserva',
         view: 'modificaciones-reservas',
         variables: {
           table: {
-            headers: ['TIPO', 'SPR', 'PLANILLA', 'CÓDIGO', 'DESCRIPCIÓN', 'CANTIDAD', 'FECHA'],
-            rows: logItems.map((logItem) => ({
-              TIPO: logItem.tipo,
-              SPR: logItem.idSpr_20,
-              PLANILLA: logItem.idEncaActaEntrega_6,
-              CÓDIGO: logItem.idItem_9,
-              DESCRIPCIÓN: logItem.maestraItems.item,
-              CANTIDAD: logItem.cantidad,
-              FECHA: moment(new Date(logItem.fecha)).format('YYYY-MM-DD HH:mm'),
-            })),
+            headers: mailHeaders,
+            rows: mailRows,
           },
           yesterday,
         },
