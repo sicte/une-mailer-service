@@ -6,8 +6,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 export class CronMailsController {
   constructor(private readonly cronMailsService: CronMailsService) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  mailsEveryDayAt1Am() {
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  mailsEveryDayAt2Am() {
     this.cronMailsService.emailModificacionesReserva();
   }
 }

@@ -74,6 +74,7 @@ export class CronMailsService {
       this.logger.warn(
         'Modificaciones Reserva email was not sent because there was no data to display in the template',
       );
+      return;
     }
 
     this.mailHandler
@@ -90,7 +91,6 @@ export class CronMailsService {
           },
           yesterday,
         },
-        force: true,
       })
       .then((result) => console.log(result))
       .catch((e) => console.log('error enviando mensaje', e));
