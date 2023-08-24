@@ -1,0 +1,5 @@
+<p>
+    A continuación se entregan las modificaciones de reservas correspondientes al día {{ yesterday }}
+</p>
+
+{{> (get_component 'table') headers=table.headers rows=table.rows title='Modificaciones Reservas' }}
