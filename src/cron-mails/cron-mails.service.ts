@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EmailType, MailHandler } from 'src/common/mail-handler';
 import { LogItems, EncaActasEntrega } from 'src/entities';
-import { Repository, Between, In } from 'typeorm';
+import { Repository, Between, In, Not } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment';
 import { Usuarios } from 'src/entities/usuarios.entity';
@@ -36,6 +36,7 @@ export class CronMailsService {
         idEncaActaEntrega_6: In(
           encaActasEntrega.map((encaActaEntrega) => encaActaEntrega.idEncaActaEntrega),
         ),
+        tipo: Not('RESERVADO'),
       },
       relations: {
         maestraItems: true,
